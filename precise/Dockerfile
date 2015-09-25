@@ -2,9 +2,9 @@
 #
 # Steps: https://github.com/scoophealth/SCOOP-doc/wiki/OSCAR-Setup-Guide
 #
-# Ubuntu 14.04 LTS (Trusty)
+# Ubuntu 12.04 LTS (Precise)
 #
-FROM ubuntu:trusty
+FROM ubuntu:precise
 MAINTAINER derek.roberts@gmail.com
 
 
@@ -38,12 +38,12 @@ ENV E2E_TARGET=gateway:3001
 ENV DEBIAN_FRONTEND noninteractive
 RUN echo 'Dpkg::Options{ "--force-confdef"; "--force-confold" }' \
       >> /etc/apt/apt.conf.d/local; \
-    echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' \
-      >> /etc/apt/sources.list.d/webupd8team-java-trusty.list; \
+    echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu precise main' \
+      >> /etc/apt/sources.list.d/webupd8team-java-precise.list; \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886; \
     echo oracle-java6-installer shared/accepted-oracle-license-v1-1 \
-      select true | /usr/bin/debconf-set-selections
-RUN apt-get update; \
+      select true | /usr/bin/debconf-set-selections; \
+    apt-get update; \
     apt-get install -y \
       git \
       libmysql-java \
