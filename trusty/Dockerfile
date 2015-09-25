@@ -5,6 +5,7 @@
 # Ubuntu 14.04 LTS (Trusty)
 #
 FROM ubuntu:trusty
+MAINTAINER derek.roberts@gmail.com
 
 
 # Tomcat6 environment variables
@@ -15,11 +16,21 @@ ENV CATALINA_BASE="/var/lib/tomcat6"
 ENV ANT_HOME="/usr/share/ant"
 
 
-# Build-specific environment variables
+# SQL database details
 #
 ENV PASSWORD=superInsecure
 ENV DATABASE=oscar_12_1
 ENV OSCAR_PROPERTIES=${CATALINA_HOME}/oscar12.properties
+
+
+# OSCAR E2E config details
+#
+# Use differential E2E export (on/off), # of days?
+ENV E2E_DIFF=off
+ENV E2E_DIFF_DAYS=14
+#
+# Target for export (CONTAINER:PORT, no http(s): or /s)
+ENV E2E_TARGET=gateway:3001
 
 
 # Update system, add repo and install packages
@@ -35,7 +46,6 @@ RUN echo 'Dpkg::Options{ "--force-confdef"; "--force-confold" }' \
 RUN apt-get update; \
     apt-get install -y \
       git \
-      lynx \
       libmysql-java \
       maven \
       mysql-server \
@@ -73,7 +83,8 @@ RUN git clone git://github.com/scoophealth/oscar.git -b scoop-deploy --depth=50;
 WORKDIR /app/oscar/
 RUN mvn clean; \
     mvn -Dmaven.test.skip=true package; \
-    cp ./target/oscar-SNAPSHOT.war ${CATALINA_BASE}/webapps/oscar12.war
+    cp ./target/oscar-SNAPSHOT.war ${CATALINA_BASE}/webapps/oscar12.war; \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
 # Compile and deploy
@@ -81,13 +92,17 @@ RUN mvn clean; \
 WORKDIR /app/oscar_documents/
 RUN mvn clean; \
     mvn -Dmaven.test.skip=true clean package; \
-    cp ./target/oscar_documents-SNAPSHOT.war ${CATALINA_BASE}/webapps/OscarDocument.war
+    cp ./target/oscar_documents-SNAPSHOT.war ${CATALINA_BASE}/webapps/OscarDocument.war; \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
 # Configure oscar12 properties
 #
 RUN cp /app/oscar/src/main/resources/oscar_mcmaster.properties ${OSCAR_PROPERTIES}; \
     sed -i \
+      -e "s/^#*db_username *=.*/db_username = root/" \
+      -e "s/^#*db_name *=.*/db_name = ${DATABASE}\?zeroDateTimeBehavior=round&useOldAliasMetadataBehavior=true&jdbcCompliantTruncation=false/" \
+      -e "s/^#*db_password *=.*/db_password=${PASSWORD}/" \
       -e "s/^#*CASEMANAGEMENT *=.*/CASEMANAGEMENT = all/" \
       -e "s/^#*DOCUMENT_DIR *=.*/DOCUMENT_DIR = \/var\/lib\/tomcat6\/webapps\/OscarDocument\/oscar_mcmaster\/document\//" \
       -e "s/^#*eform_image *=.*/eform_image = \/var\/lib\/tomcat6\/webapps\/OscarDocument\/oscar_mcmaster\/eform\/images/" \
@@ -97,19 +112,16 @@ RUN cp /app/oscar/src/main/resources/oscar_mcmaster.properties ${OSCAR_PROPERTIE
 
 # Configure oscar12 properties - BC only
 #
-RUN sed -i \
-      -e "s/^#*db_username *=.*/db_username = root/" \
-      -e "s/^#*db_name *=.*/db_name = ${DATABASE}\?zeroDateTimeBehavior=round&useOldAliasMetadataBehavior=true&jdbcCompliantTruncation=false/" \
-      -e "s/^#*db_password *=.*/db_password=${PASSWORD}/" \
-      -e "s/^#*visitlocation *=.*/visitlocation = 00|VANCOUVER/" \
-      -e "s/^#*dataCenterId *=.*/dataCenterId = 00000/" \
-      -e "s/^#*billregion *=.*/billregion = BC/" \
-      -e "s/^#*NEW_BC_TELEPLAN *=.*/NEW_BC_TELEPLAN = yes/" \
-      -e "s/^#*CDM_ALERTS *=.*/CDM_ALERTS = 250,428,4280/" \
-      -e "s/^#*COUNSELING_CODES *=.*/COUNSELING_CODES = 18220,18120,17220,17120,16220,16120,13220,12220,12120,00120/" \
-      -e "s/^#*phoneprefix *=.*/phoneprefix = 250-/" \
-      -e "s/^#*HL7TEXT_LABS *=.*/HL7TEXT_LABS = yes/" \
-      ${OSCAR_PROPERTIES}
+#RUN sed -i \
+#      -e "s/^#*visitlocation *=.*/visitlocation = 00|VANCOUVER/" \
+#      -e "s/^#*dataCenterId *=.*/dataCenterId = 00000/" \
+#      -e "s/^#*billregion *=.*/billregion = BC/" \
+#      -e "s/^#*NEW_BC_TELEPLAN *=.*/NEW_BC_TELEPLAN = yes/" \
+#      -e "s/^#*CDM_ALERTS *=.*/CDM_ALERTS = 250,428,4280/" \
+#      -e "s/^#*COUNSELING_CODES *=.*/COUNSELING_CODES = 18220,18120,17220,17120,16220,16120,13220,12220,12120,00120/" \
+#      -e "s/^#*phoneprefix *=.*/phoneprefix = 250-/" \
+#      -e "s/^#*HL7TEXT_LABS *=.*/HL7TEXT_LABS = yes/" \
+#      ${OSCAR_PROPERTIES}
 
 
 # Configure oscar12 properties - E2E export
@@ -117,9 +129,9 @@ RUN sed -i \
 RUN sed -i \
       -e "s/^#*program *=.*/program = off/" ${OSCAR_PROPERTIES} \
       -e "s/^#*ModuleNames *= *E2E/ModuleNames = E2E/" \
-      -e "s/^#*E2E_URL *=.*/E2E_URL = http:\/\/gateway:3001\/records\/create/" \
-      -e "s/^#*E2E_DIFF *=.*/E2E_DIFF = off/" \
-      -e "s/^#*E2E_DIFF_DAYS *=.*/E2E_DIFF_DAYS = 14/" \
+      -e "s/^#*E2E_URL *=.*/E2E_URL = http:\/\/${E2E_TARGET}\/records\/create/" \
+      -e "s/^#*E2E_DIFF *=.*/E2E_DIFF = ${E2E_DIFF}/" \
+      -e "s/^#*E2E_DIFF_DAYS *=.*/E2E_DIFF_DAYS = ${E2E_DIFF_DAYS}/" \
       ${OSCAR_PROPERTIES}
 
 
@@ -142,9 +154,7 @@ RUN ( \
 WORKDIR /app/oscar/database/mysql/
 RUN service mysql start; \
     mysqladmin -u root password ${PASSWORD}; \
-    ./createdatabase_bc.sh root ${PASSWORD} ${DATABASE}; \
-    java -cp .:/app/oscar/local_repo/mysql/mysql-connector-java/3.0.11/mysql-connector-java-3.0.11.jar importCasemgmt ${OSCAR_PROPERTIES}; \
-    mysql --user=root --password=${PASSWORD} -e 'insert into issue (code,description,role,update_date,sortOrderId) select icd9.icd9, icd9.description, "doctor", now(), '0' from icd9;' ${DATABASE}
+    ./createdatabase_bc.sh root ${PASSWORD} ${DATABASE}
 
 
 # Point oscar.properties to drugref
