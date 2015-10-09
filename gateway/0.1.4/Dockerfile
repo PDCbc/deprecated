@@ -6,7 +6,7 @@
 # - Set Hub IP addr: -e IP_HUB=#.#.#.#
 # - Use an env file: --env-file=/path/to/file.env
 #
-# Samples at https://github.com/physiciansdatacollaborative/endpoint.git
+# Samples at https://github.com/pdcbc/endpoint.git
 
 
 # Base image
