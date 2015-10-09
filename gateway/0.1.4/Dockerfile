@@ -36,7 +36,7 @@ RUN echo 'Dpkg::Options{ "--force-confdef"; "--force-confold" }' \
 # Prepare /app/ folder
 #
 WORKDIR /app/
-RUN git clone https://github.com/pdcbc/endpoint.git -b ${RELEASE_GATEWAY} .; \
+RUN git clone https://github.com/pdcbc/gateway.git -b ${RELEASE_GATEWAY} .; \
     mkdir -p ./tmp/pids ./util/files; \
     gem install multipart-post; \
     sed -i -e "s/localhost:27017/database:27017/" config/mongoid.yml; \
