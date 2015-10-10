@@ -74,12 +74,20 @@ RUN ( \
       >> ${HOME}/.bashrc
 
 
-# Clone and prep source (remove validateXml from jspc.xml)
+# Clone OSCAR and oscar_documents prep source (remove validateXml=true, add exit to scheduler)
 #
+WORKDIR /
+RUN ls -la
 WORKDIR /app/
 RUN git clone git://github.com/scoophealth/oscar.git -b scoop-deploy --depth=50; \
-    git clone git://oscarmcmaster.git.sourceforge.net/gitroot/oscarmcmaster/oscar_documents; \
-    sed -i 's/validateXml="false"//' oscar/jspc.xml
+    git clone git://oscarmcmaster.git.sourceforge.net/gitroot/oscarmcmaster/oscar_documents
+
+
+# Prepare source (remove validateXml=true, add exit to scheduler)
+#
+RUN sed -i 's/validateXml="false"//' oscar/jspc.xml; \
+    sed -i '/DbConnectionFilter.releaseAllThreadDbResources();/a \\t\t\tSystem.exit(0);' \
+      oscar/src/main/java/org/oscarehr/common/service/E2ESchedulerJob.java
 
 
 # Compile and deploy
@@ -95,7 +103,7 @@ RUN mvn clean; \
 #
 WORKDIR /app/oscar_documents/
 RUN mvn clean; \
-    mvn -Dmaven.test.skip=true clean package; \
+    mvn -Dmaven.test.skip=true package; \
     cp ./target/oscar_documents-SNAPSHOT.war ${CATALINA_BASE}/webapps/OscarDocument.war; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -112,20 +120,6 @@ RUN cp /app/oscar/src/main/resources/oscar_mcmaster.properties ${OSCAR_PROPERTIE
       -e "s/^#*eform_image *=.*/eform_image = \/var\/lib\/tomcat6\/webapps\/OscarDocument\/oscar_mcmaster\/eform\/images/" \
       -e "s/^#*TMP_DIR *:.*/TMP_DIR: \/var\/lib\/tomcat6\/webapps\/OscarDocument\/oscar_mcmaster\/export\//" \
       ${OSCAR_PROPERTIES}
-
-
-# Configure oscar12 properties - BC only
-#
-#RUN sed -i \
-#      -e "s/^#*visitlocation *=.*/visitlocation = 00|VANCOUVER/" \
-#      -e "s/^#*dataCenterId *=.*/dataCenterId = 00000/" \
-#      -e "s/^#*billregion *=.*/billregion = BC/" \
-#      -e "s/^#*NEW_BC_TELEPLAN *=.*/NEW_BC_TELEPLAN = yes/" \
-#      -e "s/^#*CDM_ALERTS *=.*/CDM_ALERTS = 250,428,4280/" \
-#      -e "s/^#*COUNSELING_CODES *=.*/COUNSELING_CODES = 18220,18120,17220,17120,16220,16120,13220,12220,12120,00120/" \
-#      -e "s/^#*phoneprefix *=.*/phoneprefix = 250-/" \
-#      -e "s/^#*HL7TEXT_LABS *=.*/HL7TEXT_LABS = yes/" \
-#      ${OSCAR_PROPERTIES}
 
 
 # Configure oscar12 properties - E2E export
@@ -159,35 +153,6 @@ WORKDIR /app/oscar/database/mysql/
 RUN service mysql start; \
     mysqladmin -u root password ${PASSWORD}; \
     ./createdatabase_bc.sh root ${PASSWORD} ${DATABASE}
-
-
-# Point oscar.properties to drugref
-#
-#RUN sed -i "s/^#*drugref_url *=.*/drugref_url=http:\/\/localhost:8080\/drugref\/DrugrefService/" ${OSCAR_PROPERTIES}
-
-
-# Import DrugRef Web ARchive
-#
-#WORKDIR /${CATALINA_BASE}/webapps/
-#RUN wget http://drugref2.googlecode.com/files/drugref.war
-
-
-# Create drugref.properties
-#
-#RUN DRUGREF_PROPERTIES=${CATALINA_HOME}/drugref.properties; \
-#    ( \
-#      echo "db_user=root"; \
-#      echo "db_password="${PASSWORD}; \
-#      echo "db_url=jdbc:mysql://127.0.0.1:3306/drugref"; \
-#      echo "db_driver=com.mysql.jdbc.Driver"; \
-#    )  \
-#    >> ${DRUGREF_PROPERTIES}
-
-
-# Create database
-#
-#RUN service mysql start; \
-#    mysql --user=root --password=${PASSWORD} -e "CREATE DATABASE drugref;"
 
 
 # Startup script
