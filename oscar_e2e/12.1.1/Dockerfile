@@ -176,7 +176,6 @@ RUN SRV=oscar_e2e; \
       echo "while read IN"; \
       echo "do"; \
       echo '  mysql --user=root --password=${PASSWORD} ${DATABASE} < "${IN}"'; \
-      echo '  rm -rf "${IN}"'; \
       echo '  echo $(date +"%Y-%m-%d")-${IN} >> import.list'; \
       echo "done"; \
       echo ""; \
