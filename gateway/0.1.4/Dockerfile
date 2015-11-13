@@ -106,6 +106,7 @@ RUN SRV=rails; \
       echo ""; \
       echo "# Start Rails server"; \
       echo "#"; \
+      echo "cd /app/"; \
       echo "exec /sbin/setuser app bundle exec rails server -p 3001"; \
     )  \
       >> /etc/service/${SRV}/run; \
