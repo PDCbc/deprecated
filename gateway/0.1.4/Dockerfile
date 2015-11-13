@@ -44,7 +44,7 @@ RUN git clone https://github.com/pdcbc/gateway.git -b ${RELEASE_GATEWAY} .; \
     /sbin/setuser app bundle install --path vendor/bundle
 
 
-# Create AutoSSH User
+# Add AutoSSH User
 #
 RUN adduser --disabled-password --gecos '' --home /home/autossh autossh; \
     chown -R autossh:autossh /home/autossh
@@ -69,6 +69,7 @@ RUN SRV=autossh; \
       echo ""; \
       echo "# Start tunnels"; \
       echo "#"; \
+      echo "sleep 15"; \
       echo "chown -R autossh:autossh /home/autossh"; \
       echo "exec /sbin/setuser autossh /usr/bin/autossh -M0 -p \${PORT_AUTOSSH} -N -R \\"; \
       echo "  \${PORT_REMOTE}:localhost:3001 autossh@\${IP_HUB} -o ServerAliveInterval=15 \\"; \
@@ -90,7 +91,8 @@ RUN SRV=delayed_job; \
       echo "#"; \
       echo "cd /app/"; \
       echo "/sbin/setuser app bundle exec /app/script/delayed_job stop"; \
-      echo "exec /sbin/setuser app bundle exec /app/script/delayed_job start"; \
+      echo "rm /app/tmp/pids/server.pid"; \
+      echo "exec /sbin/setuser app bundle exec /app/script/delayed_job run"; \
     )  \
       >> /etc/service/${SRV}/run; \
     chmod +x /etc/service/${SRV}/run
