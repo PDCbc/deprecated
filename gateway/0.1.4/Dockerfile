@@ -88,6 +88,7 @@ RUN SRV=delayed_job; \
       echo ""; \
       echo "# Start delayed job"; \
       echo "#"; \
+      echo "cd /app/"; \
       echo "/sbin/setuser app bundle exec /app/script/delayed_job stop"; \
       echo "exec /sbin/setuser app bundle exec /app/script/delayed_job start"; \
     )  \
