@@ -62,7 +62,7 @@ RUN ( \
       echo "#"; \
       echo "IP_HUB=\${IP_HUB:-10.0.2.2}"; \
       echo "gID=\${gID:-0}"; \
-      echo "GATEWAY_ID=\$( printf  %04d ${gID} )"; \
+      echo "GATEWAY_ID=\$( printf  %04d \${gID} )"; \
       echo ""; \
       echo ""; \
       echo "# Rename and rsync files"; \
