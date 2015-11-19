@@ -28,7 +28,8 @@ RUN echo 'Dpkg::Options{ "--force-confdef"; "--force-confold" }' \
     apt-get update; \
     apt-get install -y \
       autossh \
-      git; \
+      git \
+      rsync; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -48,6 +49,30 @@ RUN git clone https://github.com/pdcbc/gateway.git -b ${RELEASE_GATEWAY} .; \
 #
 RUN adduser --disabled-password --gecos '' --home /home/autossh autossh; \
     chown -R autossh:autossh /home/autossh
+
+
+# Script for File Copying
+#
+VOLUME /app/sync/
+RUN ( \
+      echo "#!/bin/bash"; \
+      echo ""; \
+      echo ""; \
+      echo "# Set variables, pad gateway ID with leading zeros"; \
+      echo "#"; \
+      echo "IP_HUB=\${IP_HUB:-10.0.2.2}"; \
+      echo "gID=\${gID:-0}"; \
+      echo "GATEWAY_ID=\$( printf  %04d ${gID} )"; \
+      echo ""; \
+      echo ""; \
+      echo "# Rename and rsync files"; \
+      echo "#"; \
+      echo "cd /app/sync/"; \
+      echo "find . -execdir rename \"s/-GATEWAY_ID_/-\${GATEWAY_ID}_/\" {} \;"; \
+      echo "/sbin/setuser autossh rsync -have \"ssh -p 2774\" -r . autossh@\${IP_HUB}:/home/autossh/sync/"; \
+    )  \
+      >> /app/sync_hub.sh; \
+    chmod +x /app/sync_hub.sh
 
 
 # Startup script for Gateway tunnel
