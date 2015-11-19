@@ -164,6 +164,7 @@ WORKDIR /app/oscar/plugins/3rdNext
 RUN mkdir -p ./reports/ /app/sync/
 #
 RUN sed -i \
+      -e "s/^clinic=.*/clinic=pdc-GATEWAY_ID/" \
       -e "s/^dbuser=.*/dbuser=root/" \
       -e "s/^dbpassword=.*/dbpassword=superInsecure/" \
     /app/oscar/plugins/3rdNext/ThirdNextAppointment.properties
