@@ -68,7 +68,7 @@ RUN ( \
       echo "# Rename and rsync files"; \
       echo "#"; \
       echo "cd /app/sync/"; \
-      echo "find . -execdir rename \"s/-GATEWAY_ID_/-\${GATEWAY_ID}_/\" {} \;"; \
+      echo "find . -execdir rename -f \"s/-GATEWAY_ID_/-\${GATEWAY_ID}_/\" {} \;"; \
       echo "/sbin/setuser autossh rsync -have \"ssh -p 2774\" -r . autossh@\${IP_HUB}:/home/autossh/sync/"; \
     )  \
       >> /app/sync_hub.sh; \
