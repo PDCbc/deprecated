@@ -4,7 +4,8 @@
 #
 # Modify default settings at runtime with environment files and/or variables.
 # - Set Gateway Link: --link <yourBuild>:gateway
-# - Set *.SQL Volume:   -v </your/path>:/e2e/:rw
+# - Set *.SQL Volume: -v </your/path>:/e2e/:rw
+# - Enable 3rd Next:  -e PI_3RDNEXT=yes/no/<nothing>
 # - Use an env file:  --env-file=</path/to/file.env>
 #
 #
@@ -76,10 +77,8 @@ RUN ( \
 
 # Clone OSCAR and oscar_documents prep source (remove validateXml=true, add exit to scheduler)
 #
-WORKDIR /
-RUN ls -la
 WORKDIR /app/
-RUN git clone git://github.com/pdcbc/oscar.git -b dev --depth=50; \
+RUN git clone git://github.com/pdcbc/oscar.git --depth=50; \
     git clone git://oscarmcmaster.git.sourceforge.net/gitroot/oscarmcmaster/oscar_documents
 
 
@@ -157,9 +156,6 @@ RUN service mysql start; \
 
 # 3rd next appointment scripts
 #
-WORKDIR /app/oscar/
-RUN git pull; \
-    git checkout 5b63138e2d104eb154c86a8ca31cc483b7a6c96f
 WORKDIR /app/oscar/plugins/3rdNext
 RUN mkdir -p ./reports/ /app/sync/
 #
@@ -181,6 +177,11 @@ RUN SRV=oscar_e2e; \
       echo "#!/bin/bash"; \
       echo ""; \
       echo ""; \
+      echo "# Set variables"; \
+      echo "#"; \
+      echo "PI_3RDNEXT=\${PI_3RDNEXT:-no}"; \
+      echo ""; \
+      echo ""; \
       echo "# Start MySql"; \
       echo "#"; \
       echo "service mysql start"; \
@@ -198,11 +199,10 @@ RUN SRV=oscar_e2e; \
       echo "done"; \
       echo ""; \
       echo ""; \
-      echo "# Run 3rd Next script"; \
+      echo "# Run plugins (currently just 3rd Next)"; \
       echo "#"; \
-      echo "cd /app/oscar/plugins/3rdNext"; \
-      echo "java -cp ".:mysql-connector-java-3.0.11.jar" ThirdNextAppointment"; \
-      echo "cp /app/oscar/plugins/3rdNext/reports/* /app/sync/"; \
+      echo "[ \${PI_3RDNEXT} != \"yes\" ] || \\"; \
+      echo "  /app/oscar/plugins/3rdNext/3rdNext.sh"; \
       echo ""; \
       echo ""; \
       echo "# Start Tomcat6"; \
