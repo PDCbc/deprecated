@@ -75,6 +75,40 @@ RUN ( \
     chmod +x /app/sync_hub.sh
 
 
+# Script for File Copying
+#
+VOLUME /app/sync/
+RUN ( \
+      echo "#!/bin/bash"; \
+      echo "#"; \
+      echo "# Exit on errors or unset variables"; \
+      echo "set -e -o nounset"; \
+      echo ""; \
+      echo ""; \
+      echo "# Create, cat and test SSH keys, if necessary"; \
+      echo "#"; \
+      echo "chown -R autossh:autossh /home/autossh"; \
+      echo "[ -f /home/autossh/.ssh/id_rsa.pub ]|| \\"; \
+      echo "{"; \
+      echo "  /sbin/setuser autossh ssh-keygen -b 4096 -t rsa -N \"\" -C dkey\${gID}-\$(date +%Y-%m-%d-%T) -f /home/autossh/.ssh/id_rsa"; \
+      echo "  cat /home/autossh/.ssh/id_rsa.pub"; \
+      echo "  echo"; \
+      echo "  echo"; \
+      echo "  echo 'Copy the public key above, then press Enter to test it'"; \
+      echo "  echo"; \
+      echo "  read ENTER_TO_CONTINUE"; \
+      echo "  /sbin/setuser autossh ssh -p \${PORT_AUTOSSH} autossh@\${IP_HUB} -o StrictHostKeyChecking=no 'hostname; exit'"; \
+      echo "}"; \
+      echo ""; \
+      echo ""; \
+      echo "cd /app/sync/"; \
+      echo "find . -execdir rename -f \"s/-GATEWAY_ID_/-\${GATEWAY_ID}_/\" {} \;"; \
+      echo "/sbin/setuser autossh rsync -have \"ssh -p 2774\" -r . autossh@\${IP_HUB}:/home/autossh/sync/"; \
+    )  \
+      >> /app/ssh_config.sh; \
+    chmod +x /app/ssh_config.sh
+
+
 # Startup script for Gateway tunnel
 #
 RUN SRV=autossh; \
@@ -92,10 +126,23 @@ RUN SRV=autossh; \
       echo "PORT_REMOTE=\`expr \${PORT_START_GATEWAY} + \${gID}\`"; \
       echo ""; \
       echo ""; \
+      echo "# Wait for SSH to be configured"; \
+      echo "#"; \
+      echo "chown -R autossh:autossh /home/autossh"; \
+      echo "while [ ! -f /home/autossh/.ssh/id_rsa.pub ]"; \
+      echo "do"; \
+      echo "  echo"; \
+      echo "  echo"; \
+      echo "  echo Please run /app/ssh_config.sh before continuing"; \
+      echo "  echo"; \
+      echo "  echo"; \
+      echo "  sleep 60"; \
+      echo "done"; \
+      echo ""; \
+      echo ""; \
       echo "# Start tunnels"; \
       echo "#"; \
       echo "sleep 15"; \
-      echo "chown -R autossh:autossh /home/autossh"; \
       echo "exec /sbin/setuser autossh /usr/bin/autossh -M0 -p \${PORT_AUTOSSH} -N -R \\"; \
       echo "  \${PORT_REMOTE}:localhost:3001 autossh@\${IP_HUB} -o ServerAliveInterval=15 \\"; \
       echo "  -o ServerAliveCountMax=3 -o Protocol=2 -o ExitOnForwardFailure=yes"; \
