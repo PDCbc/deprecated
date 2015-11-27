@@ -84,20 +84,22 @@ RUN ( \
       echo "# Exit on errors or unset variables"; \
       echo ""; \
       echo ""; \
-      echo "# Create, cat and test SSH keys, if necessary"; \
+      echo "# Create SSH keys, if necessary"; \
       echo "#"; \
       echo "chown -R autossh:autossh /home/autossh"; \
       echo "[ -f /home/autossh/.ssh/id_rsa.pub ]|| \\"; \
-      echo "{"; \
       echo "  /sbin/setuser autossh ssh-keygen -b 4096 -t rsa -N \"\" -C dkey\${gID}-\$(date +%Y-%m-%d-%T) -f /home/autossh/.ssh/id_rsa"; \
-      echo "  cat /home/autossh/.ssh/id_rsa.pub"; \
-      echo "  echo"; \
-      echo "  echo"; \
-      echo "  echo 'Copy the public key above, then press Enter to test it'"; \
-      echo "  echo"; \
-      echo "  read ENTER_TO_CONTINUE"; \
-      echo "  /sbin/setuser autossh ssh -p \${PORT_AUTOSSH} autossh@\${IP_HUB} -o StrictHostKeyChecking=no 'hostname; exit'"; \
-      echo "}"; \
+      echo ""; \
+      echo ""; \
+      echo "# Cat and test SSH keys"; \
+      echo "#"; \
+      echo "cat /home/autossh/.ssh/id_rsa.pub"; \
+      echo "echo"; \
+      echo "echo"; \
+      echo "echo 'Copy the public key above, then press Enter to test it'"; \
+      echo "echo"; \
+      echo "read ENTER_TO_CONTINUE"; \
+      echo "/sbin/setuser autossh ssh -p \${PORT_AUTOSSH} autossh@\${IP_HUB} -o StrictHostKeyChecking=no 'hostname; exit'"; \
     )  \
       >> /app/ssh_config.sh; \
     chmod +x /app/ssh_config.sh
