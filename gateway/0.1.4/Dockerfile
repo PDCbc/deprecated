@@ -75,14 +75,13 @@ RUN ( \
     chmod +x /app/sync_hub.sh
 
 
-# Script for File Copying
+# Script for SSH key setup
 #
 VOLUME /app/sync/
 RUN ( \
       echo "#!/bin/bash"; \
       echo "#"; \
       echo "# Exit on errors or unset variables"; \
-      echo "set -e -o nounset"; \
       echo ""; \
       echo ""; \
       echo "# Create, cat and test SSH keys, if necessary"; \
@@ -99,11 +98,6 @@ RUN ( \
       echo "  read ENTER_TO_CONTINUE"; \
       echo "  /sbin/setuser autossh ssh -p \${PORT_AUTOSSH} autossh@\${IP_HUB} -o StrictHostKeyChecking=no 'hostname; exit'"; \
       echo "}"; \
-      echo ""; \
-      echo ""; \
-      echo "cd /app/sync/"; \
-      echo "find . -execdir rename -f \"s/-GATEWAY_ID_/-\${GATEWAY_ID}_/\" {} \;"; \
-      echo "/sbin/setuser autossh rsync -have \"ssh -p 2774\" -r . autossh@\${IP_HUB}:/home/autossh/sync/"; \
     )  \
       >> /app/ssh_config.sh; \
     chmod +x /app/ssh_config.sh
