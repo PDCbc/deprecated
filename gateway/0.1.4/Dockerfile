@@ -51,30 +51,6 @@ RUN adduser --disabled-password --gecos '' --home /home/autossh autossh; \
     chown -R autossh:autossh /home/autossh
 
 
-# Script for File Copying
-#
-VOLUME /app/sync/
-RUN ( \
-      echo "#!/bin/bash"; \
-      echo ""; \
-      echo ""; \
-      echo "# Set variables, pad gateway ID with leading zeros"; \
-      echo "#"; \
-      echo "IP_HUB=\${IP_HUB:-10.0.2.2}"; \
-      echo "gID=\${gID:-0}"; \
-      echo "GATEWAY_ID=\$( printf  %04d \${gID} )"; \
-      echo ""; \
-      echo ""; \
-      echo "# Rename and rsync files"; \
-      echo "#"; \
-      echo "cd /app/sync/"; \
-      echo "find . -execdir rename -f \"s/-GATEWAY_ID_/-\${GATEWAY_ID}_/\" {} \;"; \
-      echo "/sbin/setuser autossh rsync -have \"ssh -p 2774\" -r . autossh@\${IP_HUB}:/home/autossh/sync/"; \
-    )  \
-      >> /app/sync_hub.sh; \
-    chmod +x /app/sync_hub.sh
-
-
 # Script for SSH key setup
 #
 VOLUME /app/sync/
@@ -140,7 +116,6 @@ RUN SRV=autossh; \
       echo ""; \
       echo "# Start tunnels"; \
       echo "#"; \
-      echo "sleep 15"; \
       echo "exec /sbin/setuser autossh /usr/bin/autossh -M0 -p \${PORT_AUTOSSH} -N -R \\"; \
       echo "  \${PORT_REMOTE}:localhost:3001 autossh@\${IP_HUB} -o ServerAliveInterval=15 \\"; \
       echo "  -o ServerAliveCountMax=3 -o Protocol=2 -o ExitOnForwardFailure=yes"; \
