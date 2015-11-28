@@ -154,32 +154,12 @@ RUN service mysql start; \
     ./createdatabase_bc.sh root ${PASSWORD} ${DATABASE}
 
 
-# 3rd next appointment scripts
-#
-WORKDIR /app/oscar/plugins/3rdNext
-RUN mkdir -p ./reports/ /app/sync/
-#
-RUN sed -i \
-      -e "s/^clinic=.*/clinic=pdc-GATEWAY_ID/" \
-      -e "s/^dbuser=.*/dbuser=root/" \
-      -e "s/^dbpassword=.*/dbpassword=superInsecure/" \
-    /app/oscar/plugins/3rdNext/ThirdNextAppointment.properties
-#
-RUN javac ReportDate.java
-RUN javac ThirdNextAppointment.java
-
-
 # Startup script
 #
 RUN SRV=oscar_e2e; \
     mkdir -p /etc/service/${SRV}/; \
     ( \
       echo "#!/bin/bash"; \
-      echo ""; \
-      echo ""; \
-      echo "# Set variables"; \
-      echo "#"; \
-      echo "PI_3RDNEXT=\${PI_3RDNEXT:-no}"; \
       echo ""; \
       echo ""; \
       echo "# Start MySql"; \
@@ -192,17 +172,10 @@ RUN SRV=oscar_e2e; \
       echo "mkdir -p /e2e/"; \
       echo "cd /e2e/"; \
       echo 'find . -name "*.sql" | \'; \
-      echo "while read IN"; \
-      echo "do"; \
-      echo '  mysql --user=root --password=${PASSWORD} ${DATABASE} < "${IN}"'; \
-      echo '  echo $(date +"%Y-%m-%d")-${IN} >> import.list'; \
-      echo "done"; \
-      echo ""; \
-      echo ""; \
-      echo "# Run plugins (currently just 3rd Next)"; \
-      echo "#"; \
-      echo "[ \${PI_3RDNEXT} != \"yes\" ] || \\"; \
-      echo "  /app/oscar/plugins/3rdNext/3rdNext.sh"; \
+      echo "  while read IN"; \
+      echo "  do"; \
+      echo '    mysql --user=root --password=${PASSWORD} ${DATABASE} < "${IN}"'; \
+      echo "  done"; \
       echo ""; \
       echo ""; \
       echo "# Start Tomcat6"; \
