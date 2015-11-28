@@ -28,8 +28,7 @@ RUN echo 'Dpkg::Options{ "--force-confdef"; "--force-confold" }' \
     apt-get update; \
     apt-get install -y \
       autossh \
-      git \
-      rsync; \
+      git; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -78,6 +77,11 @@ RUN ( \
       echo "# Verify public key is loaded and populate known_hosts"; \
       echo "#"; \
       echo "/sbin/setuser autossh ssh -p \${PORT_AUTOSSH} autossh@\${IP_HUB} -o StrictHostKeyChecking=no 'hostname; exit'"; \
+      echo "echo"; \
+      echo "echo"; \
+      echo "echo 'Success!'"; \
+      echo "echo"; \
+      echo "echo"; \
     )  \
       >> /app/ssh_config.sh; \
     chmod +x /app/ssh_config.sh
@@ -135,8 +139,8 @@ RUN SRV=delayed_job; \
       echo "# Start delayed job"; \
       echo "#"; \
       echo "cd /app/"; \
-      echo "/sbin/setuser app bundle exec /app/script/delayed_job stop"; \
-      echo "rm /app/tmp/pids/server.pid"; \
+      echo "/sbin/setuser app bundle exec /app/script/delayed_job stop > /dev/null"; \
+      echo "rm /app/tmp/pids/server.pid > /dev/null"; \
       echo "exec /sbin/setuser app bundle exec /app/script/delayed_job run"; \
     )  \
       >> /etc/service/${SRV}/run; \
