@@ -2,6 +2,11 @@
 #
 #
 # Drug Class Lookup API
+#
+# Modify default settings at runtime with environment files and/or variables.
+# - DCLAPI port:     -e PORT_DCLAPI=####
+# - Use an env file: --env-file=/path/to/file.env
+#
 # https://github.com/pdcbc/dclapi.git
 
 
