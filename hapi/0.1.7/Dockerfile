@@ -25,7 +25,11 @@ ENV RELEASE 0.1.7
 #
 RUN apt-get update; \
     apt-get upgrade -y; \
-    apt-get install -y python2.7
+    apt-get install -y \
+      git \
+      python2.7; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
 # Prepare /app/ folder

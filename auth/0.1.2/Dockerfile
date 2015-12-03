@@ -12,7 +12,7 @@
 # - Use an env file: --env-file=</path/file.env>
 #
 # Releases
-# - https://github.com/PDCbc/dclapi/releases
+# - https://github.com/PDCbc/auth/releases
 #
 #
 FROM phusion/passenger-nodejs
