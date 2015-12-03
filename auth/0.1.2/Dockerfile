@@ -24,7 +24,11 @@ ENV RELEASE 0.1.2
 #
 RUN apt-get update; \
     apt-get upgrade -y; \
-    apt-get install -y dacs git
+    apt-get install -y \
+      dacs \
+      git; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
 # Prepare /app/ and /etc/dacs/ folders
