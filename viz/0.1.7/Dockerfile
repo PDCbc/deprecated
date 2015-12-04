@@ -34,6 +34,15 @@ RUN apt-get update; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
+# Prepare /app/ folder
+#
+WORKDIR /app/
+RUN git clone https://github.com/pdcbc/viz.git -b ${RELEASE} .; \
+    npm config set python /usr/bin/python2.7; \
+    npm install; \
+    chown -R app:app /app/
+
+
 # Create startup script and make it executable
 #
 RUN mkdir -p /etc/service/app/; \
@@ -65,15 +74,6 @@ RUN mkdir -p /etc/service/app/; \
     )  \
       >> /etc/service/app/run; \
     chmod +x /etc/service/app/run
-
-
-# Prepare /app/ folder
-#
-WORKDIR /app/
-RUN git clone https://github.com/pdcbc/viz.git -b ${RELEASE} .; \
-    npm config set python /usr/bin/python2.7; \
-    npm install; \
-    chown -R app:app /app/
 
 
 # Run Command
