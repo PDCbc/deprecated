@@ -1,18 +1,29 @@
 # Dockerfile for the PDC's Visualizer service
 #
 #
-# Visualizer for aggregate data
+# isualizer for PDC-collected aggregate data. Link to Auth and HAPI.
 #
-# Modify default settings at runtime with environment files and/or variables.
-# - Viz https port:  -e PORT_VIZ=<hostPort>
-# -      http port:  -e PORT_VIZ_HTTP=<hostPort>
-# - Auth main port:  -e PORT_AUTH_M=<hostPort>
-# -   control port:  -e PORT_AUTH_C=<hostPort>
-# - Hub API port:    -e PORT_HAPI=<hostPort>
-# - Node secret:     -e NODE_SECRET=<string>
-# - Reject non-CA    -e REJECT_NONCA_CERTS=<0/1>
-#     certificates?:
-# - Use an env file: --env-file=/path/file.env
+# Example:
+# sudo docker pull pdcbc/viz
+# sudo docker run -d  --name=viz -h viz --restart=always \
+#   --link auth:auth \
+#   --link hapi:hapi \
+#    -p 443:3004 \
+#    -p 80:3008 \
+#    pdcbc/viz
+#
+# Linked containers
+# - Auth:           --link auth:auth
+# - HAPI:           --link hapi:hapi
+#
+# External ports
+# - https:          -p <hostPort(443)>:3004
+# - http:           -p <hostPort(80)>:3008
+#
+# Modify default settings
+# - Node secret:    -e NODE_SECRET=<string>
+# - Reject non-CA   -e REJECT_NONCA_CERTS=<0/1>
+#    certificates?:
 #
 # Releases
 # - https://github.com/PDCbc/viz/releases

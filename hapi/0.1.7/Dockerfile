@@ -1,18 +1,27 @@
 # Dockerfile for the PDC's HAPI service
 #
 #
-# Hub API
+# Hub API used by the PDC's Visualizer.  Links to Auth, HubDB and DCLAPI.
 #
-# Modify default settings at runtime
-# - HAPI port:       -e PORT_HAPI=<hostPort>
-# - Auth ctrl port:  -e PORT_AUTH_C=<hostPort>
-# - DCLAPI port:     -e PORT_DCLAPI=<hostPort>
+# Example:
+# sudo docker pull pdcbc/hapi
+# sudo docker run -d --name=hapi -h hapi --restart=always \
+#   --link auth:auth \
+#   --link dclapi:dclapi \
+#   --link hubdb:hubdb \
+#   pdcbc/hapi
+#
+# Linked containers
+# - Auth:            --link auth:auth
+# - DCLAPI:          --link dclapi:dclapi
+# - HubDB:           --link hubdb:hubdb
+#
+# Modify default settings
 # - DACS federation: -e DACS_FEDERATION=<string>
 # -    jurisdiction: -e DACS_JURISDICTION=<string>
 # - Node secret:     -e NODE_SECRET=<string>
 # - Reject non-CA    -e REJECT_NONCA_CERTS=<0/1>
 #     certificates?:
-# - Use an env file: --env-file=</path/file.env>
 #
 # Releases
 # - https://github.com/PDCbc/hapi/releases

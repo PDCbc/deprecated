@@ -1,15 +1,21 @@
 # Dockerfile for the PDC's Auth service
 #
 #
-# DACS-based authorization
+# DACS-based authentication module used by the PDC's Visualizer.
 #
-# Modify default settings at runtime
-# - Auth main port:  -e PORT_AUTH_M=<hostPort>
-# -   control port:  -e PORT_AUTH_C=<hostPort>
+# Example:
+# sudo docker pull pdcbc/auth
+# sudo docker run -d --name=auth -h auth --restart=always \
+#   -v /pdc/data/config/dacs/:/etc/dacs/:rw \
+#   pdcbc/auth
+#
+# Folder paths
+# - DACS config:     -v </path/>:/etc/dacs/:rw
+#
+# Modify default settings
 # - DACS federation: -e DACS_FEDERATION=<string>
 # -    jurisdiction: -e DACS_JURISDICTION=<string>
 # - Node secret:     -e NODE_SECRET=<string>
-# - Use an env file: --env-file=</path/file.env>
 #
 # Releases
 # - https://github.com/PDCbc/auth/releases

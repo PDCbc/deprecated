@@ -1,10 +1,14 @@
 # Dockerfile for the PDC's DCLAPI service
 #
 #
-# Drug Class Lookup API
+# Drug Class Lookup API used by the PDC's Hub API (HAPI).
 #
-# Modify default settings at runtime
-# - Host port: -p <hostPort>:3007
+# Example:
+# sudo docker pull pdcbc/dclapi
+# sudo docker run -d --name=dclapi -h dclapi --restart=always pdcbc/dclapi
+#
+# External port (for testing)
+# - DCLAPI: -p <hostPort>:3007
 #
 # Releases
 # - https://github.com/PDCbc/dclapi/releases

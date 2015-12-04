@@ -1,14 +1,26 @@
 # Dockerfile for the PDC's Composer (a.k.a. Hub) service
 #
 #
-# Composer for aggregate data queries
+# Composer for aggregate data queries. Links to HubDB.
+#
+# Example:
+# sudo docker pull pdcbc/composer
+# sudo docker run -d --name=composer -h composer --restart=always \
+#   --link hubdb:hubdb \
+#   -p 2774:22 \
+#   -p 3002:3002 \
+#   -v /pdc/data/config/ssh/authorized_keys/:/home/autossh/.ssh/:ro \
+#   -v /pdc/data/config/ssh/known_hosts/:/root/.ssh/:rw \
+#   -v /pdc/data/config/ssh/ssh_keys_hub/:/etc/ssh/:rw \
+#   -v /pdc/data/config/scheduled_jobs/:/app/util/scheduled_job_params:rw  \
+#   pdcbc/dclapi
 #
 # Linked containers
-# - Link, HubDB:     --link hubdb:hubdb
+# - HubDB:           --link hubdb:hubdb
 #
 # External ports
-# - AutoSSH port:    -p <hostPort>:22
-# - Web UI port:     -p <hostPort>:3002
+# - AutoSSH:         -p <hostPort>:22
+# - Web UI:          -p <hostPort>:3002
 #
 # Folder paths
 # - authorized_keys: -v </path/>:/home/autossh/.ssh/:ro
@@ -17,7 +29,7 @@
 # - job params:      -v </path/>:/app/util/scheduled_job_params:rw
 #
 # Releases
-# - https://github.com/PDCbc/hapi/releases
+# - https://github.com/PDCbc/composer/releases
 #
 #
 FROM phusion/passenger-ruby19
@@ -60,12 +72,10 @@ RUN mkdir -p /etc/service/app/; \
       echo ""; \
       echo "# Create Endpoint public keys file (authorized_keys)"; \
       echo "#"; \
-      echo "if [ ! -f /home/autossh/.ssh/authorized_keys ]"; \
-      echo "then"; \
-      echo "  mkdir -p /home/autossh/.ssh/"; \
-      echo "  touch /home/autossh/.ssh/authorized_keys"; \
-      echo "fi"; \
+      echo "mkdir -p /home/autossh/.ssh/"; \
+      echo "touch /home/autossh/.ssh/authorized_keys"; \
       echo "chown -R autossh:autossh /home/autossh/.ssh/"; \
+      echo ""; \
       echo ""; \
       echo "# Start service"; \
       echo "#"; \
