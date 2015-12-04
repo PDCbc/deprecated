@@ -31,4 +31,4 @@ RUN apt-get update; \
 # Prepare /app/ folder
 #
 WORKDIR /app/
-RUN git clone https://github.com/pdcbc/hubdb.git .
+RUN git clone https://github.com/pdcbc/hubdb.git . -b ${RELEASE}
