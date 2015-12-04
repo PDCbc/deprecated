@@ -32,7 +32,7 @@ MAINTAINER derek.roberts@gmail.com
 ENV RELEASE 0.1.7
 
 
-# Update system, install Python 2.7
+# Packages
 #
 RUN apt-get update; \
     apt-get install -y \

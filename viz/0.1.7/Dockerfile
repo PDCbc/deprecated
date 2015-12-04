@@ -1,7 +1,7 @@
 # Dockerfile for the PDC's Visualizer service
 #
 #
-# isualizer for PDC-collected aggregate data. Link to Auth and HAPI.
+# Visualizer for PDC-collected aggregate data. Link to Auth and HAPI.
 #
 # Example:
 # sudo docker pull pdcbc/viz
@@ -34,10 +34,9 @@ MAINTAINER derek.roberts@gmail.com
 ENV RELEASE 0.1.7
 
 
-# Update system, install Python 2.7
+# Packages
 #
 RUN apt-get update; \
-    apt-get upgrade -y; \
     apt-get install -y \
       python2.7 \
       git; \

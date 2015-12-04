@@ -37,7 +37,7 @@ MAINTAINER derek.roberts@gmail.com
 ENV RELEASE 0.1.3
 
 
-# Update system, install Lynx
+# Packages
 #
 RUN apt-get update; \
     apt-get install -y \

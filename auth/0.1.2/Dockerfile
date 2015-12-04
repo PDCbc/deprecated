@@ -26,7 +26,7 @@ MAINTAINER derek.roberts@gmail.com
 ENV RELEASE 0.1.2
 
 
-# Update system, install DACS
+# Packages
 #
 RUN apt-get update; \
     apt-get upgrade -y; \
