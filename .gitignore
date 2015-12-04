@@ -4,7 +4,7 @@
 *.json
 *.xml
 .vagrant/
-
+.directory
 
 ########################
 ### GitHub Suggested ###
