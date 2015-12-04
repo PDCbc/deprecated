@@ -40,6 +40,15 @@ RUN rm -f /etc/service/sshd/down; \
     adduser --quiet --disabled-password --home /home/autossh autossh 2>&1
 
 
+# Prepare /app/ folder
+#
+WORKDIR /app/
+RUN git clone https://github.com/pdcbc/composer.git . -b ${RELEASE}; \
+    chown -R app:app /app/; \
+    /sbin/setuser app bundle install --path vendor/bundle; \
+    sed -i -e "s/localhost:27017/hubdb:27017/" config/mongoid.yml
+
+
 # Create startup script and make it executable
 #
 RUN mkdir -p /etc/service/app/; \
@@ -67,17 +76,8 @@ RUN mkdir -p /etc/service/app/; \
       echo "/sbin/setuser app bundle exec rails server -p 3002"; \
       echo "/sbin/setuser app bundle exec script/delayed_job stop"; \
     )  \
-      >> /etc/service/app/run
+      >> /etc/service/app/run; \
     chmod +x /etc/service/app/run
-
-
-# Prepare /app/ folder
-#
-WORKDIR /app/
-RUN git clone https://github.com/pdcbc/composer.git . -b ${RELEASE}; \
-    chown -R app:app /app/ \
-    /sbin/setuser app bundle install --path vendor/bundle; \
-    sed -i -e "s/localhost:27017/hubdb:27017/" config/mongoid.yml
 
 
 # Run Command
