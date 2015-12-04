@@ -10,6 +10,8 @@
 # - DACS federation: -e DACS_FEDERATION=<string>
 # -    jurisdiction: -e DACS_JURISDICTION=<string>
 # - Node secret:     -e NODE_SECRET=<string>
+# - Reject non-CA    -e REJECT_NONCA_CERTS=<0/1>
+#     certificates?:
 # - Use an env file: --env-file=</path/file.env>
 #
 # Releases
@@ -59,7 +61,7 @@ RUN mkdir -p /etc/service/app/; \
       echo "export HAPI_GROUPS=/home/app/groups/groups.json"; \
       echo "#"; \
       echo "export ROLES=/etc/dacs/federations/\${DACS_FEDERATION:-pdc.dev}/roles"; \
-      echo "export NODE_TLS_REJECT_UNAUTHORIZED=0"; \
+      echo "export NODE_TLS_REJECT_UNAUTHORIZED=\${REJECT_NONCA_CERTS:-0}"; \
       echo "export SECRET=\${NODE_SECRET:-notVerySecret}"; \
       echo ""; \
       echo ""; \
