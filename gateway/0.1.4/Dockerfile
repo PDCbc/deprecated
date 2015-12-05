@@ -1,3 +1,39 @@
+# Dockerfile for the PDC's Gateway (formerly Endpoint) service
+#
+#
+# Receives e2e exports and responds to queries as part of an Endpoint deployment.
+# Links to a database.
+#
+# Example:
+# sudo docker pull pdcbc/gateway
+# sudo docker run -d --name=gateway -h gateway --restart=always \
+#   --link database:database \
+#   -v /encrypted/docker/import/.ssh/:/home/autossh/.ssh/:rw"
+#   -e gID=<gatewayID> \
+#   pdcbc/dclapi
+#
+# Linked containers
+# - Database:   --link database:database
+#
+# Folder paths
+# - SSH keys:   -v </path/>:/home/autossh/.ssh/:ro
+#
+# Required variables
+# - Gateway ID: -e gID=####
+#
+# Modify default settings
+# - Hub IPv4:   -e gID=#.#.#.#
+# -   SSH port: -e PORT_AUTOSSH=####
+#
+# Releases
+# - https://github.com/PDCbc/gateway/releases
+#
+#
+FROM phusion/passenger-ruby19
+MAINTAINER derek.roberts@gmail.com
+ENV RELEASE 0.1.3
+
+
 # Dockerfile for the PDC's Gateway service, part of an Endpoint deployment
 #
 #
