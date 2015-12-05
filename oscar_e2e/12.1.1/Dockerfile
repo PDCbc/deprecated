@@ -1,12 +1,20 @@
 # Dockerfile for the PDC's Customized OSCAR 12 E2E exporter service
 #
-# Steps: https://github.com/scoophealth/SCOOP-doc/wiki/OSCAR-Setup-Guide
 #
-# Modify default settings at runtime with environment files and/or variables.
-# - Set Gateway Link: --link <yourBuild>:gateway
-# - Set *.SQL Volume: -v </your/path>:/e2e/:rw
-# - Enable 3rd Next:  -e PI_3RDNEXT=yes/no/<nothing>
-# - Use an env file:  --env-file=</path/to/file.env>
+# Modified OSCAR 12 build. Import SQL, filter and export to aggregate data-gathering endpoint.
+#
+# Example:
+# sudo docker pull pdcbc/oscar_e2e
+# sudo docker run -d --name=oscar -h oscar --restart=always \
+#   --link gateway:gateway \
+#   -v /encrypted/docker/import/:/e2e/:ro \
+#   pdcbc/oscar
+#
+# Linked containers
+# - Gateway:    --link gateway:gateway
+#
+# Folder paths
+# - SQL import: -v </path/>:/e2e/:ro
 #
 #
 FROM ubuntu:trusty
@@ -195,6 +203,6 @@ RUN SRV=oscar_e2e; \
     chmod +x /etc/service/${SRV}/run
 
 
-# Start using the script from earlier
+# Start the script above
 #
 ENTRYPOINT ["/etc/service/oscar_e2e/run"]
