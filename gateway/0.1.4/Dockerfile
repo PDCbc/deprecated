@@ -115,7 +115,7 @@ RUN SRV=autossh; \
       echo "PORT_REMOTE=\`expr \${PORT_START_GATEWAY} + \${gID}\`"; \
       echo ""; \
       echo ""; \
-      echo "# Wait for SSH to be configured"; \
+      echo "# Wait for SSH keys to be configured"; \
       echo "#"; \
       echo "chown -R autossh:autossh /home/autossh"; \
       echo "while [ ! -f /home/autossh/.ssh/id_rsa.pub ]"; \
@@ -127,6 +127,19 @@ RUN SRV=autossh; \
       echo "  echo"; \
       echo "  sleep 60"; \
       echo "done"; \
+      echo ""; \
+      echo ""; \
+      echo "# Autossh settings (env vars)"; \
+      echo "#"; \
+      echo "export AUTOSSH_PIDFILE=/home/autossh/autossh.pid"; \
+      echo "export AUTOSSH_GATETIME=0"; \
+      echo "export AUTOSSH_MAXSTART=1"; \
+      echo ""; \
+      echo ""; \
+      echo "# Stop autossh, if running"; \
+      echo "#"; \
+      echo "[ ! -z \${AUTOSSH_PIDFILE} ]|| \\"; \
+      echo " kill \$( cat \${AUTOSSH_PIDFILE} )"; \
       echo ""; \
       echo ""; \
       echo "# Start tunnels"; \
