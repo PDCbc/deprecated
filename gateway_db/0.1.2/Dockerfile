@@ -7,11 +7,11 @@
 # Example:
 # sudo docker pull pdcbc/gateway_db
 # sudo docker run -d --name=database -h database --restart=always \
-#   -v /encrypted/docker/mongo/:/data/db:rw
+#   -v /encrypted/docker/mongo/:/data/db:rw \
 #   pdcbc/gateway_db
 #
 # Folder paths
-# - Mongo DB:   -v </path/>:/home/autossh/.ssh/:ro
+# - Mongo DB:   -v </path/>:/data/db/:rw
 #
 #
 FROM phusion/baseimage
@@ -113,12 +113,17 @@ RUN mkdir -p /etc/service/mongod/; \
 		echo ""; \
 		echo "# Environment variables"; \
 		echo "#"; \
-		echo "MONGO_OPTIONS=\${MONGO_OPTIONS:-'--storageEngine wiredTiger'}"; \
-    echo ""; \
+		echo "RAM_REDUCE=\${RAM_REDUCE:-no}"; \
+		echo ""; \
 		echo ""; \
 		echo "# Start mongod"; \
 		echo "#"; \
-		echo "exec mongod \${MONGO_OPTIONS}"; \
+		echo "if( ${RAM_REDUCE} != yes )"; \
+		echo "then"; \
+		echo " exec mongod --storageEngine wiredTiger"; \
+		echo "else"; \
+		echo " exec mongod --storageEngine wiredTiger --wiredTigerEngineConfigString=cache_size=200M --nojournal"; \
+		echo "fi"; \
   )  \
     >> ${SCRIPT}; \
 	chmod +x ${SCRIPT}
