@@ -9,7 +9,8 @@
 # sudo docker run -d --name=gateway -h gateway --restart=always \
 #   --link database:database \
 #   -v /encrypted/docker/import/.ssh/:/home/autossh/.ssh/:rw"
-#   -e gID=<gatewayID> \
+#   -e gID=9999 \
+#   -e DOCTOR_IDS=11111,99999
 #   pdcbc/dclapi
 #
 # Linked containers
@@ -20,10 +21,12 @@
 #
 # Required variables
 # - Gateway ID:   -e gID=####
+# - Doctor IDs:   -e DOCTOR_IDS=#####,#####,...,#####
 #
 # Modify default settings
 # - Composer IP:  -e IP_COMPOSER=#.#.#.#
 # - AutoSSH port: -e PORT_AUTOSSH=####
+# - Low GW port:  -e PORT_START_GATEWAY=####
 #
 # Releases
 # - https://github.com/PDCbc/gateway/releases
@@ -66,8 +69,12 @@ RUN adduser --disabled-password --gecos '' --home /home/autossh autossh; \
 VOLUME /app/sync/
 RUN ( \
       echo "#!/bin/bash"; \
+      echo ""; \
+      echo ""; \
+      echo "# Set variables"; \
       echo "#"; \
-      echo "# Exit on errors or unset variables"; \
+      echo "IP_COMPOSER=\${IP_COMPOSER:-142.104.128.120}"; \
+      echo "PORT_AUTOSSH=\${PORT_AUTOSSH:-2774}"; \
       echo ""; \
       echo ""; \
       echo "# Create and cat SSH keys, if necessary"; \
@@ -109,8 +116,8 @@ RUN SRV=autossh; \
       echo "# Set variables"; \
       echo "#"; \
       echo "gID=\${gID:-0}"; \
-      echo "IP_COMPOSER=\${IP_COMPOSER:-10.0.2.2}"; \
-      echo "PORT_AUTOSSH=\${PORT_AUTOSSH:-22}"; \
+      echo "IP_COMPOSER=\${IP_COMPOSER:-142.104.128.120}"; \
+      echo "PORT_AUTOSSH=\${PORT_AUTOSSH:-2774}"; \
       echo "PORT_START_GATEWAY=\${PORT_START_GATEWAY:-40000}"; \
       echo "PORT_REMOTE=\`expr \${PORT_START_GATEWAY} + \${gID}\`"; \
       echo ""; \
@@ -177,6 +184,16 @@ RUN SRV=rails; \
     mkdir -p /etc/service/${SRV}/; \
     ( \
       echo "#!/bin/bash"; \
+      echo ""; \
+      echo ""; \
+      echo "# Set variables"; \
+      echo "#"; \
+      echo "DOCTOR_IDS=\${DOCTOR_IDS:-cpsid}"; \
+      echo ""; \
+      echo ""; \
+      echo "# Populate providers.txt with DOCTORS"; \
+      echo "#"; \
+      echo "/app/providers.sh add \${DOCTOR_IDS}"; \
       echo ""; \
       echo ""; \
       echo "# Start Rails server"; \
