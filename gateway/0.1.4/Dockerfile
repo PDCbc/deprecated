@@ -6,7 +6,7 @@
 #
 # Example:
 # sudo docker pull pdcbc/gateway
-# sudo docker run -d --name=gateway -h gateway --restart=always \
+# sudo docker run -d --name=gateway --restart=always \
 #   --link database:database \
 #   -v /encrypted/docker/import/.ssh/:/home/autossh/.ssh/:rw"
 #   -e gID=9999 \
@@ -64,47 +64,6 @@ RUN adduser --disabled-password --gecos '' --home /home/autossh autossh; \
     chown -R autossh:autossh /home/autossh
 
 
-# Script for SSH key setup
-#
-VOLUME /app/sync/
-RUN ( \
-      echo "#!/bin/bash"; \
-      echo ""; \
-      echo ""; \
-      echo "# Set variables"; \
-      echo "#"; \
-      echo "IP_COMPOSER=\${IP_COMPOSER:-142.104.128.120}"; \
-      echo "PORT_AUTOSSH=\${PORT_AUTOSSH:-2774}"; \
-      echo ""; \
-      echo ""; \
-      echo "# Create and cat SSH keys, if necessary"; \
-      echo "#"; \
-      echo "chown -R autossh:autossh /home/autossh"; \
-      echo "[ -f /home/autossh/.ssh/id_rsa.pub ]|| \\"; \
-      echo "{"; \
-      echo "  /sbin/setuser autossh ssh-keygen -b 4096 -t rsa -N \"\" -C dkey\${gID}-\$(date +%Y-%m-%d-%T) -f /home/autossh/.ssh/id_rsa"; \
-      echo "  cat /home/autossh/.ssh/id_rsa.pub"; \
-      echo "  echo"; \
-      echo "  echo"; \
-      echo "  echo 'Copy the public key above, then press Enter to test it'"; \
-      echo "  echo"; \
-      echo "  read ENTER_TO_CONTINUE"; \
-      echo "}"; \
-      echo ""; \
-      echo ""; \
-      echo "# Verify public key is loaded and populate known_hosts"; \
-      echo "#"; \
-      echo "/sbin/setuser autossh ssh -p \${PORT_AUTOSSH} autossh@\${IP_COMPOSER} -o StrictHostKeyChecking=no 'hostname; exit'"; \
-      echo "echo"; \
-      echo "echo"; \
-      echo "echo 'Success!'"; \
-      echo "echo"; \
-      echo "echo"; \
-    )  \
-      >> /app/ssh_config.sh; \
-    chmod +x /app/ssh_config.sh
-
-
 # Startup script for Gateway tunnel
 #
 RUN SRV=autossh; \
@@ -122,37 +81,25 @@ RUN SRV=autossh; \
       echo "PORT_REMOTE=\`expr \${PORT_START_GATEWAY} + \${gID}\`"; \
       echo ""; \
       echo ""; \
-      echo "# Wait for SSH keys to be configured"; \
+      echo "# Check for SSH keys"; \
       echo "#"; \
+      echo "sleep 15"; \
       echo "chown -R autossh:autossh /home/autossh"; \
-      echo "while [ ! -f /home/autossh/.ssh/id_rsa.pub ]"; \
-      echo "do"; \
+      echo "if [ ! -s /home/autossh/.ssh/id_rsa.pub ]"; \
+      echo "then"; \
       echo "  echo"; \
+      echo "  echo No SSH keys in /home/autossh/.ssh/."; \
       echo "  echo"; \
-      echo "  echo Please run /app/ssh_config.sh before continuing"; \
-      echo "  echo"; \
-      echo "  echo"; \
-      echo "  sleep 60"; \
-      echo "done"; \
+      echo "  sleep 3600"; \
+      echo "  exit"; \
+      echo "fi"; \
       echo ""; \
       echo ""; \
-      echo "# Autossh settings (env vars)"; \
+      echo "# Start tunnels, echo key if unsuccessful"; \
       echo "#"; \
-      echo "export AUTOSSH_PIDFILE=/home/autossh/autossh.pid"; \
-      echo "export AUTOSSH_GATETIME=0"; \
       echo "export AUTOSSH_MAXSTART=1"; \
-      echo ""; \
-      echo ""; \
-      echo "# Stop autossh, if running"; \
-      echo "#"; \
-      echo "[ ! -z \${AUTOSSH_PIDFILE} ]|| \\"; \
-      echo " kill \$( cat \${AUTOSSH_PIDFILE} )"; \
-      echo ""; \
-      echo ""; \
-      echo "# Start tunnels"; \
-      echo "#"; \
       echo "exec /sbin/setuser autossh /usr/bin/autossh -M0 -p \${PORT_AUTOSSH} -N -R \\"; \
-      echo "  \${PORT_REMOTE}:localhost:3001 autossh@\${IP_COMPOSER} -o ServerAliveInterval=15 \\"; \
+      echo "  \${PORT_REMOTE}:localhost:3001 \${IP_COMPOSER} -o ServerAliveInterval=15 \\"; \
       echo "  -o ServerAliveCountMax=3 -o Protocol=2 -o ExitOnForwardFailure=yes"; \
     )  \
       >> /etc/service/${SRV}/run; \
@@ -191,7 +138,7 @@ RUN SRV=rails; \
       echo "DOCTOR_IDS=\${DOCTOR_IDS:-cpsid}"; \
       echo ""; \
       echo ""; \
-      echo "# Populate providers.txt with DOCTORS"; \
+      echo "# Populate providers.txt with DOCTOR_IDS"; \
       echo "#"; \
       echo "/app/providers.sh add \${DOCTOR_IDS}"; \
       echo ""; \

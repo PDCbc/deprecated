@@ -6,12 +6,15 @@
 #
 # Example:
 # sudo docker pull pdcbc/gateway_db
-# sudo docker run -d --name=database -h database --restart=always \
+# sudo docker run -d --name=database --restart=always \
 #   -v /encrypted/docker/mongo/:/data/db:rw \
 #   pdcbc/gateway_db
 #
 # Folder paths
 # - Mongo DB:   -v </path/>:/data/db/:rw
+#
+# Modify default settings
+# - RAM < 1 GB: -e RAM_REDUCE=<yes/no>
 #
 #
 FROM phusion/baseimage
