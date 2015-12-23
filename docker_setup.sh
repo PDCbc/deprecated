@@ -5,13 +5,12 @@
 
 # Halt on errors or uninitialized variables
 #
-set -e -o nounset -x
+set -e -o nounset
 
 
 # Install Docker and Docker Compose
 #
 sudo apt-get update
-exit
 sudo apt-get install -y \
 	linux-image-extra-$(uname -r) \
 	curl
@@ -22,16 +21,35 @@ sudo curl -o /usr/local/bin/docker-compose -L \
 sudo chmod +x /usr/local/bin/docker-compose
 
 
+# Mongo Containers - Disable Transparent Hugepages, while running
+#
+echo never | sudo tee /sys/kernel/mm/transparent_hugepage/enabled > /dev/null
+echo never | sudo tee /sys/kernel/mm/transparent_hugepage/defrag > /dev/null
+
+
+# Mongo Containers - Disable Transparent Hugepages, after reboots
+#
+if(! grep --quiet 'never > /sys/kernel/mm/transparent_hugepage/enabled' /etc/rc.local )
+then
+	sudo sed -i '/exit 0/d' /etc/rc.local; \
+	( \
+		echo ''; \
+		echo '# Disable Transparent Hugepage, for Mongo'; \
+		echo '#'; \
+		echo 'echo never > /sys/kernel/mm/transparent_hugepage/enabled'; \
+		echo 'echo never > /sys/kernel/mm/transparent_hugepage/defrag'; \
+		echo ''; \
+		echo 'exit 0'; \
+	) | sudo tee -a /etc/rc.local
+	sudo chmod 755 /etc/rc.local
+fi
+
+
 # Configure ~/.bashrc, if necessary
 #
 if(! grep --quiet 'function dclean()' ${HOME}/.bashrc )
 then
 	( \
-		echo ""; \
-		echo "# Env vars"; \
-		echo "#"; \
-		echo "export TERM=xterm"; \
-		echo "export EDITOR=nano"; \
 		echo ""; \
 		echo "# Function to quickly enter containers"; \
 		echo "#"; \
@@ -62,28 +80,4 @@ then
 	echo ""; \
 	echo "Please log in/out for changes to take effect!"; \
 	echo ""; \
-fi
-
-
-# Mongo Containers - Disable Transparent Hugepages, while running
-#
-echo never | sudo tee /sys/kernel/mm/transparent_hugepage/enabled > /dev/null
-echo never | sudo tee /sys/kernel/mm/transparent_hugepage/defrag > /dev/null
-
-
-# Mongo Containers - Disable Transparent Hugepages, after reboots
-#
-if(! grep --quiet 'never > /sys/kernel/mm/transparent_hugepage/enabled' /etc/rc.local )
-then
-	sudo sed -i '/exit 0/d' /etc/rc.local; \
-	( \
-		echo ''; \
-		echo '# Disable Transparent Hugepage, for Mongo'; \
-		echo '#'; \
-		echo 'echo never > /sys/kernel/mm/transparent_hugepage/enabled'; \
-		echo 'echo never > /sys/kernel/mm/transparent_hugepage/defrag'; \
-		echo ''; \
-		echo 'exit 0'; \
-	) | sudo tee -a /etc/rc.local
-	sudo chmod 755 /etc/rc.local
 fi
